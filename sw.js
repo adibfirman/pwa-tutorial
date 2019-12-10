@@ -1,5 +1,5 @@
 const APP_NAME = "food-ninja";
-const VERSION_APP = "v2";
+const VERSION_APP = "v1";
 const CACHE_NAME = `${APP_NAME}-${VERSION_APP}`;
 const DYNAMIC_CACHE_NAME = `${APP_NAME}-dynamic-${VERSION_APP}`;
 const CACHE_FILES = [
@@ -16,6 +16,16 @@ const CACHE_FILES = [
   "/manifest.json",
   "/img/icons/icon-144x144.png"
 ];
+
+const limitAreCaches = ({ name, limit }) => {
+  caches.open(name).then(cache => {
+    cache.keys().then(keys => {
+      if (keys.length > limit) {
+        cache.delete(keys[0]).then(limitAreCaches({ name, limit }));
+      }
+    });
+  });
+};
 
 // install event
 self.addEventListener("install", e => {
@@ -50,6 +60,7 @@ self.addEventListener("fetch", e => {
           fetch(e.request).then(res => {
             caches.open(DYNAMIC_CACHE_NAME).then(cache => {
               cache.put(e.request.url, res.clone());
+              limitAreCaches({ name: DYNAMIC_CACHE_NAME, limit: 50 });
             });
 
             return res.clone();
