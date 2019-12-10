@@ -1,10 +1,11 @@
 const APP_NAME = "food-ninja";
-const VERSION_APP = "v3";
+const VERSION_APP = "v2";
 const CACHE_NAME = `${APP_NAME}-${VERSION_APP}`;
-const DYNAMIC_CACHE_NAME = `${APP_NAME}-dynamic-v1`;
+const DYNAMIC_CACHE_NAME = `${APP_NAME}-dynamic-${VERSION_APP}`;
 const CACHE_FILES = [
   "/",
   "/index.html",
+  "/pages/fallback.html",
   "/js/app.js",
   "/js/ui.js",
   "/js/materialize.min.js",
@@ -30,7 +31,9 @@ self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+        keys
+          .filter(key => key !== CACHE_NAME && key !== DYNAMIC_CACHE_NAME)
+          .map(key => caches.delete(key))
       );
     })
   );
@@ -39,17 +42,20 @@ self.addEventListener("activate", e => {
 // fetch event
 self.addEventListener("fetch", e => {
   e.respondWith(
-    caches.match(e.request).then(cache => {
-      return (
-        cache ||
-        fetch(e.request).then(res => {
-          caches.open(DYNAMIC_CACHE_NAME).then(cache => {
-            cache.put(e.request.url, res.clone());
-          });
+    caches
+      .match(e.request)
+      .then(cache => {
+        return (
+          cache ||
+          fetch(e.request).then(res => {
+            caches.open(DYNAMIC_CACHE_NAME).then(cache => {
+              cache.put(e.request.url, res.clone());
+            });
 
-          return res.clone();
-        })
-      );
-    })
+            return res.clone();
+          })
+        );
+      })
+      .catch(() => caches.match("/pages/fallback.html"))
   );
 });
