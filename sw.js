@@ -1,6 +1,7 @@
 const APP_NAME = "food-ninja";
 const VERSION_APP = "v3";
 const CACHE_NAME = `${APP_NAME}-${VERSION_APP}`;
+const DYNAMIC_CACHE_NAME = `${APP_NAME}-dynamic-v1`;
 const CACHE_FILES = [
   "/",
   "/index.html",
@@ -39,7 +40,16 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   e.respondWith(
     caches.match(e.request).then(cache => {
-      return cache || fetch(e.request);
+      return (
+        cache ||
+        fetch(e.request).then(res => {
+          caches.open(DYNAMIC_CACHE_NAME).then(cache => {
+            cache.put(e.request.url, res.clone());
+          });
+
+          return res.clone();
+        })
+      );
     })
   );
 });
