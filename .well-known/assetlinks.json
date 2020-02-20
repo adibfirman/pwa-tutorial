@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.twakeren",
+      "sha256_cert_fingerprints": [
+        "2D:AE:AD:13:A9:13:69:56:96:F3:FD:81:47:72:24:98:BE:17:4A:FE:07:EC:E3:96:90:BA:E8:56:F7:7A:33:FF"
+      ]
+    }
+  }
+]
